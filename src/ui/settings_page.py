@@ -59,6 +59,7 @@ class SettingsPage(QWidget):
     back_requested = pyqtSignal()
     settings_saved = pyqtSignal()
     docs_requested = pyqtSignal() # Сигнал для обновления UI (компактный режим)
+    farm_switched = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -581,12 +582,6 @@ class SettingsPage(QWidget):
         self.combo_farms.setFixedHeight(40)
         farm_select_layout.addWidget(self.combo_farms, 1)
         
-        btn_switch_farm = QPushButton("Переключить")
-        btn_switch_farm.setObjectName("PrimaryBtn")
-        btn_switch_farm.setFixedHeight(40)
-        btn_switch_farm.clicked.connect(self.switch_farm)
-        farm_select_layout.addWidget(btn_switch_farm)
-
         btn_launch_farm = QPushButton("🚀 Открыть в новом окне")
         btn_launch_farm.setFixedHeight(40)
         btn_launch_farm.setStyleSheet(f"background-color: {styles.COLOR_ACCENT_BG}; color: {styles.COLOR_PRIMARY}; border: 1px solid {styles.COLOR_PRIMARY}; font-weight: bold; border-radius: 6px;")
@@ -1004,6 +999,7 @@ class SettingsPage(QWidget):
             idx = self.combo_farms.findText(name)
             if idx >= 0:
                 self.combo_farms.setCurrentIndex(idx)
+            self.settings_saved.emit()
             QMessageBox.information(self, "Фермы", f"Ферма '{name}' успешно создана!\nВы можете выбрать её в списке и переключиться.")
         else:
             QMessageBox.critical(self, "Ошибка", "Не удалось создать ферму. Возможно, она уже существует или имя содержит недопустимые символы.")
