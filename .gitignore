@@ -1,9 +1,14 @@
 # Python
 __pycache__/
+*.py[cod]
+*$py.class
 .venv/
+env/
+venv/
 
-# Private Data
+# Private Data & Configs
 config.json
+config.json.bak
 *.session
 *.session-journal
 *.log
@@ -12,29 +17,39 @@ avatar.jpg
 viewer.py
 engine.py
 
-# OS
-.DS_Store
+# Sensitive proxy & account lists
+250_proxy.txt
+*_proxy.txt
+proxies.txt
+proxy.txt
+emails.txt
+phones.txt
+accounts.csv
+Webshare*.txt
+active_farm.txt
+unknown_errors.txt
 
-# build
-FULLSYS.md
-NEWMODULE.md
-PROJECT_CONTEXT.md
-DEBUG
-UPDATE.md
-IGNORE/
+# Farms & Profile Directories
 farms/*
 !farms/.gitkeep
+
+# Local Submodules / Private Tools
+Agregator-Viewer-soft/
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
 
 # AppImage and Build artifacts
 *.AppImage
 AppRun
+build/
+dist/
 
-# Logs and Local State
-unknown_errors.txt
-active_farm.txt
-emails.txt
-accounts.csv
-Webshare*.txt
 # Backups & Archives
 *.bak
 *.zip
@@ -47,12 +62,14 @@ backups/
 *.db-journal
 *.sqlite
 *.sqlite3
-phones.txt
 
 # User content
 avatars/*
 !avatars/.gitkeep
 
+# System & Desktop
 shadowgram.desktop
 DEF_FARMS
+DEBUG
+
 
