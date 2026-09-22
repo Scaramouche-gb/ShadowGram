@@ -1,7 +1,7 @@
 from src.core.constants import *
 import os
 import subprocess
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QFrame, QLabel, QPushButton, QMenu
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QStackedWidget, QFrame, QLabel, QPushButton, QMenu, QComboBox, QMessageBox
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import QTimer, QEvent, Qt, QSize
 from src.ui.icon_cache import get_icon
@@ -102,6 +102,13 @@ class TelegramManager(QWidget):
         self.label_sidebar_farm.setStyleSheet(f"font-size: 11px; font-weight: bold; color: {styles.COLOR_PRIMARY}; background: {styles.COLOR_BG}; border-radius: 4px; padding: 3px 8px;")
         intro_layout.addWidget(self.label_sidebar_farm)
 
+        self.combo_sidebar_farm = QComboBox()
+        self.combo_sidebar_farm.setFixedHeight(32)
+        self.combo_sidebar_farm.setToolTip("Мгновенное переключение рабочей фермы")
+        self.combo_sidebar_farm.currentTextChanged.connect(self.switch_farm)
+        intro_layout.addWidget(self.combo_sidebar_farm)
+        self.refresh_farm_selector(farm_name)
+
         sidebar_layout.addWidget(sidebar_intro)
 
         # Навигационные кнопки
@@ -134,14 +141,6 @@ class TelegramManager(QWidget):
         self.btn_modules = self.create_nav_button("Модули", MODULS_ICON_PATH)
         self.btn_modules.clicked.connect(self.show_modules)
         sidebar_layout.addWidget(self.btn_modules)
-
-        self.btn_neiro = self.create_nav_button("Нейрокомм.", NEIRO_ICON_PATH)
-        self.btn_neiro.clicked.connect(self.show_neiro)
-        sidebar_layout.addWidget(self.btn_neiro)
-
-        self.btn_mass_sender = self.create_nav_button("Рассылка", ROCKET_ICON_PATH)
-        self.btn_mass_sender.clicked.connect(self.show_mass_sender)
-        sidebar_layout.addWidget(self.btn_mass_sender)
 
         self.btn_ai_assistant = self.create_nav_button("Ассистент", ROBOT_ICON_PATH)
         self.btn_ai_assistant.clicked.connect(self.show_ai_assistant)
@@ -176,7 +175,6 @@ class TelegramManager(QWidget):
             self.btn_table,
             self.btn_server,
             self.btn_modules,
-            self.btn_neiro,
             self.btn_ai_assistant,
             self.btn_node_editor,
             self.btn_services,
@@ -198,7 +196,6 @@ class TelegramManager(QWidget):
         from src.ui.server_window import ServerPage
         from src.ui.services_page import ServicesPage
         from src.ui.ai_page import AIPage
-        from src.ui.neuro_commenting_page import NeuroCommentingPage
         
         self.services_page = ServicesPage(self)
         self.modules_page = ModulesPage(self)
@@ -206,9 +203,6 @@ class TelegramManager(QWidget):
         self.table_page = AccountTablePage(self)
         self.docs_page = DocsPage()
         self.ai_page = AIPage(self)
-        from src.ui.mass_sender_page import MassSenderPage
-        self.mass_sender_page = MassSenderPage(self)
-        self.neuro_page = NeuroCommentingPage(self)
         
         from src.ui.node_editor.node_editor_window import NodeEditorWindow
         self.node_editor_page = NodeEditorWindow(manager=self)
@@ -227,8 +221,6 @@ class TelegramManager(QWidget):
         self.stack.addWidget(self.services_page)
         self.stack.addWidget(self.docs_page)
         self.stack.addWidget(self.ai_page)
-        self.stack.addWidget(self.neuro_page)
-        self.stack.addWidget(self.mass_sender_page)
         self.stack.addWidget(self.node_editor_page)
 
         main_layout.addWidget(self.stack, 1) # 1 - растягивать контент
@@ -263,17 +255,44 @@ class TelegramManager(QWidget):
         self.update_nav_buttons(self.btn_services)
         self.switch_page(self.services_page)
 
-    def show_mass_sender(self):
-        self.mass_sender_page.load_accounts()
-        self.update_nav_buttons(self.btn_mass_sender)
-        self.switch_page(self.mass_sender_page)
-
     def update_nav_buttons(self, active_btn):
         self.clear_nav_selection()
         active_btn.setChecked(True)
 
     def switch_page(self, page):
         self.stack.setCurrentWidget(page)
+
+    def refresh_farm_selector(self, active_name=None):
+        from src.core.managers import farm_manager
+        active_name = active_name or farm_manager.get_active_farm_name()
+        self.combo_sidebar_farm.blockSignals(True)
+        self.combo_sidebar_farm.clear()
+        self.combo_sidebar_farm.addItems(farm_manager.list_available_farms())
+        index = self.combo_sidebar_farm.findText(active_name)
+        if index >= 0:
+            self.combo_sidebar_farm.setCurrentIndex(index)
+        self.combo_sidebar_farm.blockSignals(False)
+        self.label_sidebar_farm.setText(f"🚜 Ферма: {active_name}")
+
+    def switch_farm(self, farm_name):
+        from src.core.managers import farm_manager
+        farm_name = farm_name.strip()
+        if not farm_name or farm_name == farm_manager.get_active_farm_name():
+            return
+        if not farm_manager.switch_active_farm(farm_name):
+            self.refresh_farm_selector()
+            QMessageBox.critical(self, "Фермы", f"Не удалось переключиться на ферму «{farm_name}».")
+            return
+
+        # Переключаем только данные, не пересоздавая страницы и окна приложения.
+        self.refresh_farm_selector(farm_name)
+        self.acc_list_page.refresh_accounts()
+        self.table_page.refresh_data()
+        if hasattr(self, "mass_sender_page"):
+            self.mass_sender_page.load_accounts()
+        if hasattr(self, "settings_page"):
+            self.settings_page.load_settings()
+        self.show_list()
 
     def setup_tray(self):
         from PyQt6.QtWidgets import QSystemTrayIcon, QMenu
@@ -353,10 +372,6 @@ class TelegramManager(QWidget):
         self.table_page.refresh_data()
         self.switch_page(self.table_page)
 
-    def show_neiro(self):
-        self.update_nav_buttons(self.btn_neiro)
-        self.switch_page(self.neuro_page)
-
     def show_ai_assistant(self):
         self.update_nav_buttons(self.btn_ai_assistant)
         self.switch_page(self.ai_page)
@@ -418,9 +433,7 @@ class TelegramManager(QWidget):
         self.stack.removeWidget(old_node_editor)
         old_node_editor.deleteLater()
 
-        # Обновляем аккаунты на странице рассылок и таблиц
-        if hasattr(self, 'mass_sender_page'):
-            self.mass_sender_page.load_accounts()
+        # Обновляем аккаунты на странице таблиц
         if hasattr(self, 'table_page'):
             self.table_page.refresh_data()
 
@@ -551,6 +564,11 @@ class TelegramManager(QWidget):
         service = TelethonConverterWindow(self)
         self._embed_service_page(service, "Конвертер Telethon")
 
+    def open_agregator_prep(self):
+        from src.services.agregator_prep_service import AgregatorSoftPrepService
+        service = AgregatorSoftPrepService(self)
+        self._embed_service_page(service, "Подготовка Agregator-Viewer-soft")
+
     def show_node_editor(self):
         selected_accounts = []
         if hasattr(self, 'acc_list_page') and hasattr(self.acc_list_page, 'rows'):
@@ -566,6 +584,8 @@ class TelegramManager(QWidget):
                 for r in self.acc_list_page.rows if r.checkbox.isChecked()
             ]
         self.node_editor_page.selected_accounts = selected_accounts
+        if hasattr(self.node_editor_page, 'accounts_panel'):
+            self.node_editor_page.accounts_panel.load_accounts()
         self.update_nav_buttons(self.btn_node_editor)
         self.switch_page(self.node_editor_page)
 
