@@ -437,6 +437,9 @@ class TelegramManager(QWidget):
         if hasattr(self, 'table_page'):
             self.table_page.refresh_data()
 
+        # Обновляем селектор ферм в боковой панели
+        self.refresh_farm_selector()
+
         # Восстанавливаем текущую страницу аккаунтов
         self.acc_list_page.refresh_accounts()
         
