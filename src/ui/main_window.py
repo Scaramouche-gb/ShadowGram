@@ -572,6 +572,11 @@ class TelegramManager(QWidget):
         service = AgregatorSoftPrepService(self)
         self._embed_service_page(service, "Подготовка Agregator-Viewer-soft")
 
+    def open_lolz_buyer(self):
+        from src.ui.lolz_buyer_page import LolzBuyerPage
+        service = LolzBuyerPage(self)
+        self._embed_service_page(service, "Покупка с Lolzteam Market")
+
     def show_node_editor(self):
         selected_accounts = []
         if hasattr(self, 'acc_list_page') and hasattr(self.acc_list_page, 'rows'):
