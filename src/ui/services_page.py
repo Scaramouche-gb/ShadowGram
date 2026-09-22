@@ -155,6 +155,8 @@ class ServicesPage(QWidget):
         services = [
             ("Авторизация сессий", "Массовый вход по номеру телефона с получением рабочих `.session` файлов.", str(PHONE_ICON_PATH), "Sessions", self.main_window.open_session_manager),
             ("Масс-создание сессий", "Создание дополнительных `.session` по существующим аккаунтам с автополучением кода из `777000` и 2FA из базы.", str(PHONE_ICON_PATH), "Sessions", self.main_window.open_mass_session_creator),
+            ("Покупка Lolzteam", "Автоматическая закупка Telegram-аккаунтов с Lolz Market (Зеленка) с распределением сессий и прокси.", str(ROCKET_ICON_PATH), "Market", self.main_window.open_lolz_buyer),
+            ("Экспорт в Agregator", "Автоматическая сборка `config.json` и выгрузка `.session` файлов для `Agregator-Viewer-soft`.", str(REFRESH_ICON_PATH), "Export", self.main_window.open_agregator_prep),
             ("Fallback API", "Назначение локальных vetted fallback-пар `api_id` / `api_hash` для аккаунтов.", str(KEY_ICON_PATH), "API", self.main_window.open_api_generator),
             ("Масс-реггер профилей", "Пакетное создание профилей фермы с первичной структурой и данными.", str(PEAPLE_ICON_PATH), "Profiles", self.main_window.open_mass_profile_creator),
             ("Конвертер TData", "Преобразование профилей Telegram Desktop в формат, пригодный для автоматизации.", str(REFRESH_ICON_PATH), "Convert", self.main_window.open_tdata_converter),
